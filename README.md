@@ -4,6 +4,8 @@
 >
 > The failure needs a specific order: Bun's Node-compatible `process.stdin` wrapper owns a TTY first, then `Bun.file(...).stream().getReader()` starts for an unrelated regular file. After that, the next stdin read can close and destroy `process.stdin`. In a terminal UI, this looks like frozen keyboard input while the process stays alive.
 
+Submitted upstream as [oven-sh/bun#30565](https://github.com/oven-sh/bun/issues/30565).
+
 Reading a regular file should not make keyboard input look like EOF!
 
 This took me about three weeks to completely pin down. The reduction ruled out renderer state, keyboard handling, raw mode, mouse handling, app state, file contents, file size, lazy path opening, Node/Web stream behavior, and ordinary fd0 HUP/ERR cases. What was left is the stdin-wrapper plus BunFile-reader interaction shown here.
