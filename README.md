@@ -1,6 +1,6 @@
-# Bun stdin/file-stream regression repro
+# Bun stdin/file-stream regression repro (NOW FIXED!)
 
-> This repo is historical evidence for [oven-sh/bun#30565](https://github.com/oven-sh/bun/issues/30565). Bun `1.3.14` resolves the stdin corruption reproduced here, and the upstream issue is closed.
+> This repo is __historical evidence__ for [oven-sh/bun#30565](https://github.com/oven-sh/bun/issues/30565). Bun `1.3.14` resolves the stdin corruption reproduced here, and the upstream issue is closed.
 >
 > Keep this repository archived as a focused regression fixture. CI now asserts the fixed behavior on current `latest` and explicit Bun `1.3.14`; the older affected window remains documented for context.
 
