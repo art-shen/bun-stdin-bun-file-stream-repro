@@ -2,9 +2,15 @@
 
 These notes are only about the standalone repro and the Bun source paths I checked. They do not depend on any downstream app.
 
+## Resolution
+
+Bun `1.3.14` resolves this repro. The upstream report is [oven-sh/bun#30565](https://github.com/oven-sh/bun/issues/30565), and the repository should now be treated as archived historical evidence plus a regression fixture.
+
+The active invariant for future checks is narrow: after `process.stdin` owns TTY stdin, starting an unrelated `Bun.file(...).stream().getReader()` must not make a later stdin wrapper read report EOF. `bun run repro:assert-fixed` is the local assertion for that invariant.
+
 ## Reduced behavior
 
-The failing sequence I can reproduce is:
+The historical failing sequence was:
 
 1. `process.stdin.on('readable', ...)` makes Bun's Node-compatible stdin wrapper own the underlying native stdin stream.
 2. `Bun.file(filePath).stream().getReader()` starts a native Bun file-backed stream for an unrelated regular file.
@@ -71,11 +77,11 @@ The repro covers one narrow interaction:
 
 The unresolved part is the lower native state transition that makes the stdin wrapper's later `reader.read()` return done after the unrelated BunFile reader starts.
 
-## Fix direction I would investigate
+## Resolved fix direction
 
-I would start below `ProcessObjectInternals.ts`. That wrapper reacts to `reader.read()` returning done; the repro shows fd 0 still has no `POLLHUP`, `POLLERR`, or `POLLNVAL` immediately before the fatal read.
+The relevant investigation path was below `ProcessObjectInternals.ts`. That wrapper reacted to `reader.read()` returning done; the repro showed fd 0 still had no `POLLHUP`, `POLLERR`, or `POLLNVAL` immediately before the fatal read.
 
-I would inspect the native done/closed flags used by `Bun.stdin.stream()` and file-backed `ReadableStream.fromNative(...)`, starting with `FileReader.zig` startup/cancel/done handling and the `PipeReader.zig` EOF path. The invariant I would add in Bun is: a regular-file Blob reader must leave fd 0's stdin reader EOF/done state alone. If the stdin JS wrapper receives done, that done state should be traceable to stdin's own native source.
+The invariant remains the important portable takeaway: a regular-file Blob reader must leave fd 0's stdin reader EOF/done state alone. If the stdin JS wrapper receives done, that done state should be traceable to stdin's own native source.
 
 ## Version sweep
 
@@ -85,5 +91,6 @@ The stable-release boundary I can show is between `1.2.21` and `1.2.22`:
 
 - `1.0.0`, `1.1.0`, `1.2.1`, `1.2.5`, `1.2.10`, `1.2.20`, and `1.2.21`: green in `--assert-fixed` mode.
 - `1.2.22`, `1.2.23`, `1.3.0`, and `1.3.13`: red only for the narrow cases, with the controls green.
+- `1.3.14`: green in `--assert-fixed` mode.
 
 I also tried `1.2.0`, but it fails every stdin case, including controls. I am keeping it out of the main CI matrix because that looks like a broader historical stdin issue, not clean evidence for this bug.

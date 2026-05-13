@@ -25,31 +25,11 @@ jobs:
       matrix:
         include:
           - bun-version: latest
-            label: affected-latest-currently-1.3.13
-            current-latest: 1.3.13
-          - bun-version: 1.3.13
-            label: affected-bun-1.3.13
-            current-latest: 1.3.13
-          - bun-version: 1.3.0
-            label: affected-bun-1.3.0
-          - bun-version: 1.2.23
-            label: affected-bun-1.2.23
-          - bun-version: 1.2.22
-            label: affected-bun-1.2.22
-          - bun-version: 1.2.21
-            label: control-bun-1.2.21
-          - bun-version: 1.2.20
-            label: control-bun-1.2.20
-          - bun-version: 1.2.10
-            label: control-bun-1.2.10
-          - bun-version: 1.2.5
-            label: control-bun-1.2.5
-          - bun-version: 1.2.1
-            label: control-bun-1.2.1
-          - bun-version: 1.1.0
-            label: control-bun-1.1.0
-          - bun-version: 1.0.0
-            label: control-bun-1.0.0
+            label: fixed-latest-currently-1.3.14
+            current-latest: 1.3.14
+          - bun-version: 1.3.14
+            label: fixed-bun-1.3.14
+            current-latest: 1.3.14
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0

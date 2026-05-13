@@ -40,6 +40,13 @@ interface MatrixResult {
   readonly readable?: boolean;
 }
 
+function assertionMeaning(spec: CaseSpec, expected: "green" | "red"): string {
+  if (expected === "green" && spec.expect === "red") {
+    return "Regression sentinel: this historically failed when the Bun native file reader corrupted stdin, and must now stay green.";
+  }
+  return spec.summary;
+}
+
 function addIfDefined<T extends object, K extends PropertyKey, V>(
   target: T,
   key: K,
@@ -190,13 +197,14 @@ for (const spec of cases.filter((item) => !assertFixed || item.includeInVersionS
   const result = runInPty(spec.command);
   const summaryPath = join(artifacts, spec.name, "summary.json");
   const expected = assertFixed ? "green" : spec.expect;
+  const meaning = assertionMeaning(spec, expected);
   if (!existsSync(summaryPath)) {
     failed = true;
     results.push({
       actual: "missing",
       changed: spec.changed,
       expected,
-      meaning: spec.summary,
+      meaning,
       name: spec.name,
       matchesExpectation: false,
     });
@@ -214,7 +222,7 @@ for (const spec of cases.filter((item) => !assertFixed || item.includeInVersionS
     actual: summary.reason,
     changed: spec.changed,
     expected,
-    meaning: spec.summary,
+    meaning,
     name: spec.name,
     matchesExpectation,
   };
